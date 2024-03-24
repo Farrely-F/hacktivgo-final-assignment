@@ -14,7 +14,7 @@ var jwtKey []byte
 func init() {
 	err := godotenv.Load(".env")
 	if err != nil {
-		panic("Error loading .env file")
+		panic("Error loading JWT .env file")
 	}
 
 	jwtKey = []byte(os.Getenv("SECRET_JWT"))
