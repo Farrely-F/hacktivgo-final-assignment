@@ -5,6 +5,7 @@ import (
 	"hacktiv-go/final-project-test/handlers"
 	"hacktiv-go/final-project-test/middleware"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,6 +13,9 @@ func main() {
 	db.Connect()
 
 	r := gin.Default()
+
+	// Use CORS middleware with default configuration
+	r.Use(cors.Default())
 
 	r.POST("/users/register", handlers.RegisterUser)
 	r.POST("/users/login", handlers.LoginUser)
