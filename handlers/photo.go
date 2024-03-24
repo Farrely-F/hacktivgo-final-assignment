@@ -12,26 +12,37 @@ import (
 )
 
 func GetPhotos(c *gin.Context) {
-	var photos models.Photo
-	if err := db.DB.Preload("User", func(db *gorm.DB) *gorm.DB {
-        return db.Select("id, username, email")
-    }).Find(&photos).Error; err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get photos"})
-        return
-    }
+	var photos []models.Photo
 
-	photoResponse := gin.H{
-		"id":         	photos.ID,
-		"title":      	photos.Title,
-		"caption":    	photos.Caption,
-		"photo_url":  	photos.PhotoURL,
-		"user_id":    	photos.UserID,
-		"created_at": 	photos.CreatedAt,
-		"updated_at": 	photos.UpdatedAt,
-		"user": 		gin.H{
-			"email": 	photos.User.Email,
-			"username": photos.User.Username,
-		},
+	if err := db.DB.Find(&photos).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get photos"})
+		return
+	}
+
+	for i, photo := range photos {
+		var user models.User
+		if err := db.DB.Where("id = ?", photo.UserID).First(&user).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user"})
+			return
+		}
+		photos[i].User = user
+	}
+
+	photoResponse := make([]gin.H, len(photos))
+	for i, photo := range photos {
+		photoResponse[i] = gin.H{
+			"id":       photo.ID,
+			"title":    photo.Title,
+			"caption":  photo.Caption,
+			"photo_url": photo.PhotoURL,
+			"user_id":  photo.UserID,
+			"created_at": photo.CreatedAt,
+			"updated_at": photo.UpdatedAt,
+			"user": gin.H{
+				"username": photo.User.Username,
+				"email":    photo.User.Email,
+			},
+		}
 	}
 
 	c.JSON(http.StatusOK, photoResponse)
