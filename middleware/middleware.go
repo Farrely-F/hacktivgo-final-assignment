@@ -12,6 +12,20 @@ func AuthMiddleware() gin.HandlerFunc {
 	jwtSecret := []byte(os.Getenv("SECRET_JWT"))
 
 	return func(c *gin.Context) {
+		// Set CORS headers to allow requests from all origins
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+
+		// Check if it's a preflight request and handle it
+		if c.Request.Method == "OPTIONS" {
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+			c.Writer.Header().Set("Access-Control-Max-Age", "86400") // One day
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+			c.AbortWithStatus(http.StatusOK)
+			return
+		}
+
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
