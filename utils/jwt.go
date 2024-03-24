@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -12,13 +13,15 @@ import (
 var jwtKey []byte
 
 func init() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		panic("Error loading JWT .env file")
-	}
+    err := godotenv.Load(".env")
+    if err != nil {
+        panic("Error loading JWT .env file: " + err.Error())
+    }
 
-	jwtKey = []byte(os.Getenv("SECRET_JWT"))
+    jwtKey = []byte(os.Getenv("SECRET_JWT"))
+    fmt.Println("JWT Key:", string(jwtKey))
 }
+
 
 func GenerateToken(id uint) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
